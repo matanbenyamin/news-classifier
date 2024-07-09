@@ -4,12 +4,35 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from collections import Counter
 from textblob import TextBlob
+import spacy
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+from sklearn.decomposition import LatentDirichletAllocation
+from textblob import TextBlob
+import gensim.downloader as api
+import spacy.cli
 
-# Ensure you have downloaded the necessary resources
+
+
+# download  necessary resources
 nltk.download('punkt')
 nltk.download('stopwords')
+# if necesary download the spacy model
+if not spacy.util.is_package('en_core_web_sm'):
+    spacy.cli.download("en_core_web_sm")
 
-def extract_title_features(title):
+def clean_text(text):
+    # Remove special characters
+    text = re.sub(r'[^A-Za-z0-9\s]', '', text)
+    # Convert text to lowercase
+    text = text.lower()
+    return text
+
+def extract_features(title):
+
+    # clean the text
+    title = clean_text(title)
+
+
     # Tokenize the title
     words = word_tokenize(title)
     word_count = len(words)
@@ -40,7 +63,14 @@ def extract_title_features(title):
 
     return features
 
-# Example usage
-title = "Breaking News: Major Earthquake Strikes Downtown!"
-features = extract_title_features(title)
-print(features)
+
+# Named Entity Recognition counts
+nlp = spacy.load('en_core_web_sm')
+
+def get_named_entities(text):
+    doc = nlp(text)
+    return [ent.label_ for ent in doc.ents]
+# Part-of-Speech tag counts
+def get_pos_tags(text):
+    doc = nlp(text)
+    return [token.pos_ for token in doc]
